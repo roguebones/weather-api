@@ -1,40 +1,52 @@
 from flask import Flask, jsonify, request
 import requests, json
-import datetime
+from datetime import datetime
 import sqlite3
 
 app = Flask(__name__)
 
 @app.before_first_request
 def _run_on_start():
-    sqliteConnection = sqlite3.connect('temperature_api_sqlite.db')
+    conn = sqlite3.connect('temperature_api_sqlite.db')
     create_table = '''CREATE TABLE IF NOT EXISTS temperature_responses (
                                 id INTEGER PRIMARY KEY,
                                 city TEXT NOT NULL,
                                 state text NOT NULL,
                                 query_time datetime,
                                 temperature_f REAL NOT NULL);'''
-    cursor = sqliteConnection.cursor()
+    cursor = conn.cursor()
     cursor.execute(create_table)
-    sqliteConnection.commit()
+    conn.commit()
 
 @app.route("/temperature", methods=['GET'])
 def get_temperature():
 
     # Set up data
     api_key = "2c6f9155611ff8fb1e08db06446cc8bc"
+    conn = sqlite3.connect('temperature_api_sqlite.db')
+
     city = "Portland"
     state = "Oregon"
-    query_time = str(datetime.datetime.now())
-    current_temp = get_temperature_from_web(city,state,api_key)
+    query_time = datetime.now()
 
-    # Insert in to table
-    sqliteConnection = sqlite3.connect('temperature_api_sqlite.db')
-    value_list = [city,state,query_time,current_temp]
-    insert_temperature(sqliteConnection,value_list)
+    # Check if there is a recent response before searching web
+    most_recent_temp_row = get_most_recent_temp(conn,city,state)
+    most_recent_temp_time = most_recent_temp_row[3]
+    most_recent_temp_f = most_recent_temp_row[4]
+    time_diff = (query_time - datetime.strptime(most_recent_temp_time, "%Y-%m-%d %H:%M:%S.%f")).seconds / 60
+
+    # Check if most recent record is within 5 minutes from response
+    if time_diff <= 5.0:
+        current_temp = most_recent_temp_f
+    else:
+        current_temp = get_temperature_from_web(city,state,api_key)
+
+        # Insert in to table
+        temperature_list = [city,state,str(query_time),current_temp]
+        insert_temperature(conn,temperature_list)
 
     # Rrovide response
-    response_dict = {"query_time": query_time, "temperature": current_temp}
+    response_dict = {"query_time": str(query_time), "temperature": current_temp}
     return response_dict
 
 def get_temperature_from_web(city,state,api_key):
@@ -43,12 +55,18 @@ def get_temperature_from_web(city,state,api_key):
     r_temp = r.json()["main"]["temp"]
     return str(r_temp)
  
- 
 def insert_temperature(conn, temperature_list):
 
-    sql = ''' INSERT INTO temperature_responses(city,state,query_time,temperature_f)
-              VALUES(?,?,?,?) '''
+    sql = ''' INSERT INTO temperature_responses(city,state,query_time,temperature_f) VALUES(?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, temperature_list)
+    conn.commit()
     return cur.lastrowid
+
+def get_most_recent_temp(conn,req_city,req_state):
+    sql = ''' SELECT * FROM temperature_responses WHERE city =? AND state =? ORDER BY id DESC LIMIT 1 '''
+    cur = conn.cursor()
+    cur.execute(sql, (req_city,req_state,))
+    row = list(cur.fetchone())
+    return row
 
