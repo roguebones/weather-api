@@ -44,12 +44,16 @@ def get_temperature():
             current_temp = str(most_recent_temp_f)
         else:
             current_temp = get_temperature_from_web(city,state,api_key)
+            if current_temp is None:
+                return "Invalid city and/or state."
 
             # Insert in to table
             temperature_list = [city,state,str(query_time),current_temp]
             insert_temperature(conn,temperature_list)
     else:
         current_temp = get_temperature_from_web(city,state,api_key)
+        if current_temp is None:
+            return "Invalid city and/or state."
 
         # Insert in to table
         temperature_list = [city,state,str(query_time),current_temp]
@@ -64,6 +68,8 @@ def get_temperature_from_web(city,state,api_key):
     # Uses openweathermap API to get temp data for a city and state
     url = "http://api.openweathermap.org/data/2.5/weather?q="+city+","+state+"&appid="+api_key+"&units=imperial"
     r = requests.get(url)
+    if r.status_code != 200:
+        return None
     r_temp = r.json()["main"]["temp"]
     return str(r_temp)
  
