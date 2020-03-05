@@ -22,24 +22,32 @@ def _run_on_start():
 
 @app.route("/temperature", methods=['GET'])
 def get_temperature():
+    query_parameters = request.args
+    city = query_parameters.get('city')
+    state = query_parameters.get('state')
 
     # Set up data
     api_key = "2c6f9155611ff8fb1e08db06446cc8bc"
     conn = sqlite3.connect('temperature_api_sqlite.db')
 
-    city = "Portland"
-    state = "Oregon"
     query_time = datetime.now()
 
     # Check if there is a recent response before searching web
     most_recent_temp_row = get_most_recent_temp(conn,city,state)
-    most_recent_temp_time = most_recent_temp_row[3]
-    most_recent_temp_f = most_recent_temp_row[4]
-    time_diff = (query_time - datetime.strptime(most_recent_temp_time, "%Y-%m-%d %H:%M:%S.%f")).seconds / 60
+    if most_recent_temp_row is not None:
+        most_recent_temp_time = most_recent_temp_row[3]
+        most_recent_temp_f = most_recent_temp_row[4]
+        time_diff = (query_time - datetime.strptime(most_recent_temp_time, "%Y-%m-%d %H:%M:%S.%f")).seconds / 60
 
-    # Check if most recent record is within 5 minutes from response
-    if time_diff <= 5.0:
-        current_temp = most_recent_temp_f
+        # Check if most recent record is within 5 minutes from response
+        if time_diff <= 5.0:
+            current_temp = str(most_recent_temp_f)
+        else:
+            current_temp = get_temperature_from_web(city,state,api_key)
+
+            # Insert in to table
+            temperature_list = [city,state,str(query_time),current_temp]
+            insert_temperature(conn,temperature_list)
     else:
         current_temp = get_temperature_from_web(city,state,api_key)
 
@@ -74,6 +82,9 @@ def get_most_recent_temp(conn,req_city,req_state):
     sql = ''' SELECT * FROM temperature_responses WHERE city =? AND state =? ORDER BY id DESC LIMIT 1 '''
     cur = conn.cursor()
     cur.execute(sql, (req_city,req_state,))
-    row = list(cur.fetchone())
-    return row
+    row = cur.fetchone()
+    if row is None:
+        return None
+    else:
+        return list(row)
 
