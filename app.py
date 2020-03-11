@@ -8,6 +8,8 @@ app = Flask(__name__)
 @app.before_first_request
 def _run_on_start():
 
+    print("setting up db before start")
+
     # Runs before first request and creates the temperature_responses table if it doesn't exist
     conn = sqlite3.connect('temperature_api_sqlite.db')
     create_table = '''CREATE TABLE IF NOT EXISTS temperature_responses (
@@ -94,3 +96,5 @@ def get_most_recent_temp(conn,req_city,req_state):
     else:
         return list(row)
 
+if __name__ == "__main__":
+    app.run("0.0.0.0")
