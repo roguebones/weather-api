@@ -1,6 +1,20 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+$script = <<-'SCRIPT'
+    yum update
+    sudo yum -y groupinstall "Development Tools"
+    sudo yum -y install openssl-devel bzip2-devel libffi-devel
+    sudo yum -y install wget
+    wget https://www.python.org/ftp/python/3.8.2/Python-3.8.2.tgz
+    tar xvf Python-3.8.2.tgz
+    cd Python-3.8*/
+    ./configure --enable-optimizations
+    sudo make install
+SCRIPT
+
+
+
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
@@ -12,14 +26,30 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.puppet_install.puppet_version = "6.13.0"
-  config.vm.provision :shell do |shell|
-    shell.inline = "puppet module install puppet-python --version 4.0.0"
-  end
+
   config.vm.box = "centos/7"
-  config.vm.provision "puppet" do |puppet|
-    puppet.module_path = "modules"
-  end
+  #config.puppet_install.puppet_version = "6.13.0"
+  #config.vm.provision :shell do |shell|
+  config.vm.provision "shell", inline: $script
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+    #shell.inline = "sudo yum install centos-release-scl"
+    #shell.inline = "sudo yum install rh-python36"
+    #shell.inline = "yum install dkms gcc make kernel-devel bzip2 binutils patch libgomp glibc-headers glibc-devel kernel-headers"
+    #shell.inline = "mkdir -p /media/cdrom"
+    #shell.inline = "mount /dev/scd0 /media/cdrom"
+    #shell.inline = "sh /media/cdrom/VBoxLinuxAdditions.run"
+    #shell.inline = "puppet module install puppet-python --version 4.0.0"
+    #shell.inline = "scl enable rh-python36 bash"
+  
+  #config.vm.provision "puppet" do |puppet|
+  # puppet.module_path = "modules"
+  #end
+ 
+ 
+ 
+
+ 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
