@@ -9,11 +9,23 @@ Virtualbox is the hypervisor used by default regardless of host OS. Ensure virtu
 
 ## Launching the Vagrant box
 
-clone repo
+In terminal, change directory in to desired folder and clone repo
 
-cd in to repo folder
+'''
+git clone https://github.com/roguebones/weather-api.git
+'''
 
+Change directory in to newly created folder
+
+'''
+cd weather-api
+'''
+
+Launch the vagrant box
+
+'''
 vagrant up
+'''
 
 ## Calling the API
 
