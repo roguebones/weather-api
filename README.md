@@ -3,7 +3,9 @@ This repo contains code to deploy a vagrant box using Centos that runs a local e
 
 ## Installing Vagrant and hypervisor dependencies
 
-install vagrant
+Visit the Vagrant downloads page and download the respective installer for your given OS: https://www.vagrantup.com/downloads.html
+
+Virtualbox is the hypervisor used by default regardless of host OS. Ensure virtualbox is installed and enabled: https://www.virtualbox.org/
 
 ## Launching the Vagrant box
 
