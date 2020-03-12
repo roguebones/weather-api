@@ -1,6 +1,8 @@
 # weather-api: Deployable Local Python Weather API
 This repo contains code to deploy a vagrant box using Centos that runs a local endpoint to get the current temperature for a provided city and state. The endpoint will return a current temperature value and a value for the time the endpoint was queried. 
 
+Data from API queries is stored in a SQLite table called temperature_api_sqlite.db and contains logic to pull the most recent temperature for a city/state if that last call was within the last 5 minutes. If not, it will reach out to OpenWeatherMap and get the current temperature. 
+
 ## Installing Vagrant and hypervisor dependencies
 
 Visit the Vagrant downloads page and download the respective installer for your given OS: https://www.vagrantup.com/downloads.html
