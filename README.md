@@ -36,6 +36,7 @@ To get the current temperature for a city, reference endpoint "/temperature" and
 ### Parameters (required)
 
 city: Accepts a valid valid city name
+
 state: Accepts a valid full state name (not state code)
 
 Note that the city and state must be a real, valid location in the USA.  
@@ -48,6 +49,7 @@ http://127.0.0.1:5000/temperature?city=Portland&state=Oregon
 ### Response:
 
 query time: timestamp of request date/time
+
 temperature: current temperature in farenheit of city/state
 
 
