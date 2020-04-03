@@ -1,6 +1,6 @@
 # weather-api: Deployable Local Python Weather API
 
-##NOTE: This project is a coding example for a job interview and does not provide any real world functionality. 
+## NOTE: This project is a coding example for a job interview and does not provide any real world functionality. 
 
 This repo contains code to deploy a vagrant box using Centos that runs a local endpoint to get the current temperature for a provided city and state. The endpoint will return a current temperature value and a value for the time the endpoint was queried. 
 
